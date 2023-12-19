@@ -7,7 +7,9 @@ import top.yjx1125.anime.pojo.Result;
 import top.yjx1125.anime.pojo.User;
 import top.yjx1125.anime.service.UserService;
 import top.yjx1125.anime.utils.Md5Util;
+import top.yjx1125.anime.utils.ThreadLocalUtil;
 
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Service
@@ -29,5 +31,24 @@ public class UserServiceImpl implements UserService {
         //添加
 
         userMapper.add(username,md5String);
+    }
+
+    @Override
+    public void update(User user) {
+        userMapper.update(user);
+    }
+
+    @Override
+    public void updateAvatar(String avatarUrl) {
+        Map<String,Object> map = ThreadLocalUtil.get();
+        Integer id = (Integer) map.get("id");
+        userMapper.updateAvatar(avatarUrl,id);
+    }
+
+    @Override
+    public void updatePwd(String newPwd) {
+        Map<String,Object> map = ThreadLocalUtil.get();
+        Integer id = (Integer) map.get("id");
+        userMapper.updatePwd(Md5Util.getMD5String(newPwd),id);
     }
 }
