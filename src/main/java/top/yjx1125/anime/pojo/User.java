@@ -18,6 +18,7 @@ public class User {
     @NotEmpty
     @Pattern(regexp = "^\\S{4,10}$")
     private String nickname;
+    //@Auth
     private String auth;
     @NotEmpty
     @Email

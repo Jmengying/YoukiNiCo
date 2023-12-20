@@ -2,6 +2,8 @@ package top.yjx1125.anime.controller;
 
 import org.hibernate.validator.constraints.URL;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import top.yjx1125.anime.utils.ThreadLocalUtil;
 import java.net.PortUnreachableException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @RestController
@@ -23,6 +26,9 @@ import java.util.regex.Pattern;
 public class UserController {
    @Autowired
    private UserService userService;
+
+   @Autowired
+   private StringRedisTemplate stringRedisTemplate;
 
    @PostMapping("/register")
    public Result register(String username,String password) {
@@ -63,6 +69,9 @@ public class UserController {
          claims.put("id",u.getId());
          claims.put("username",u.getUsername());
          String token = JwtUtil.genToken(claims);
+         //将token存入redis
+         ValueOperations<String,String> operations = stringRedisTemplate.opsForValue();
+         operations.set(token,token,1, TimeUnit.HOURS);
 
         return Result.success(token);
 
@@ -96,7 +105,7 @@ public class UserController {
    }
 
    @PatchMapping("/updatePwd")
-   public Result updatePwd(@RequestBody Map<String,String> params){
+   public Result updatePwd(@RequestBody Map<String,String> params,@RequestHeader("Authorization") String token){
       String old_pwd = params.get("old_pwd");
       String new_pwd = params.get("new_pwd");
       String re_pwd = params.get("re_pwd");
@@ -119,6 +128,9 @@ public class UserController {
       }
 
       userService.updatePwd(new_pwd);
+      //删除原来的token
+       ValueOperations<String,String> operations = stringRedisTemplate.opsForValue();
+       operations.getOperations().delete(token);
       return Result.success();
    }
 

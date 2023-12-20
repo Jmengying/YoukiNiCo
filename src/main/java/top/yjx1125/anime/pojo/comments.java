@@ -1,6 +1,7 @@
 package top.yjx1125.anime.pojo;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDateTime;
